@@ -1,6 +1,5 @@
 package io.quarkus.workshop.superheroes.hero;
 
-import static io.restassured.RestAssured.get;
 import static io.restassured.RestAssured.given;
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
@@ -10,7 +9,6 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -105,11 +103,11 @@ public class HeroResourceTest {
     @Test
     @Order(1)
     void shouldGetInitialItems() {
-        List<Hero> heroes = get("/api/heroes").then()
+        given().get("/api/heroes").then()
             .statusCode(OK.getStatusCode())
             .contentType(APPLICATION_JSON)
-            .extract().body().as(getHeroTypeRef());
-        assertEquals(NB_HEROES, heroes.size());
+            .and()
+            .body("size()", is(NB_HEROES));
     }
 
     @Test
@@ -149,10 +147,10 @@ public class HeroResourceTest {
             .body("picture", Is.is(DEFAULT_PICTURE))
             .body("powers", Is.is(DEFAULT_POWERS));
 
-        List<Hero> heroes = get("/api/heroes").then()
+        given().get("/api/heroes").then()
             .statusCode(OK.getStatusCode())
-            .extract().body().as(getHeroTypeRef());
-        assertEquals(NB_HEROES + 1, heroes.size());
+            .and()
+            .body("size()", is(NB_HEROES + 1));
     }
 
     @Test
@@ -181,11 +179,11 @@ public class HeroResourceTest {
             .body("picture", Is.is(UPDATED_PICTURE))
             .body("powers", Is.is(UPDATED_POWERS));
 
-        List<Hero> heroes = get("/api/heroes").then()
+        given().get("/api/heroes").then()
             .statusCode(OK.getStatusCode())
             .contentType(APPLICATION_JSON)
-            .extract().body().as(getHeroTypeRef());
-        assertEquals(NB_HEROES + 1, heroes.size());
+            .and()
+            .body("size()", is(NB_HEROES + 1));
     }
 
     @Test
@@ -197,11 +195,10 @@ public class HeroResourceTest {
             .then()
             .statusCode(NO_CONTENT.getStatusCode());
 
-        List<Hero> heroes = get("/api/heroes").then()
+        given().get("/api/heroes").then()
             .statusCode(OK.getStatusCode())
             .contentType(APPLICATION_JSON)
-            .extract().body().as(getHeroTypeRef());
-        assertEquals(NB_HEROES, heroes.size());
+            .body("size()", is(NB_HEROES));
     }
 
     private TypeRef<List<Hero>> getHeroTypeRef() {
