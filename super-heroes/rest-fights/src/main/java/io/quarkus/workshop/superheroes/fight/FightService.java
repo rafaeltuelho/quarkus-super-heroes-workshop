@@ -11,27 +11,47 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
+
+import io.quarkus.workshop.superheroes.fight.client.Hero;
+import io.quarkus.workshop.superheroes.fight.client.HeroProxy;
+import io.quarkus.workshop.superheroes.fight.client.Villain;
+import io.quarkus.workshop.superheroes.fight.client.VillainProxy;
 
 @ApplicationScoped
 @Transactional(SUPPORTS)
 public class FightService {
 
     @Inject Logger logger;
-
+    @RestClient HeroProxy heroProxy; // With Quarkus, when you use a qualifier, you can omit @Inject
+    @RestClient VillainProxy villainProxy;
+    
     private final Random random = new Random();
 
+    Fighters findRandomFighters() {
+        Hero hero = findRandomHero();
+        Villain villain = findRandomVillain();
+        Fighters fighters = new Fighters();
+        fighters.hero = hero;
+        fighters.villain = villain;
+        return fighters;
+    }
+    
+    Villain findRandomVillain() {
+        return villainProxy.findRandomVillain();
+    }
+    
+    Hero findRandomHero() {
+       return heroProxy.findRandomHero();
+    }
+    
     public List<Fight> findAllFights() {
         return Fight.listAll();
     }
 
     public Fight findFightById(Long id) {
         return Fight.findById(id);
-    }
-
-    public Fighters findRandomFighters() {
-        // Will be implemented later
-        return null;
     }
 
     @Transactional(REQUIRED)
