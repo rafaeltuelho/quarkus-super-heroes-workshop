@@ -14,6 +14,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.jboss.logging.Logger;
 
 @Path("/api/fights")
@@ -24,14 +26,9 @@ public class FightResource {
 
     @Inject
     FightService service;
-
-    @GET
-    @Path("/randomfighters")
-    public Response getRandomFighters() {
-        Fighters fighters = service.findRandomFighters();
-        logger.debug("Get random fighters " + fighters);
-        return Response.ok(fighters).build();
-    }
+    
+    @ConfigProperty(name = "process.milliseconds", defaultValue = "0")
+    long tooManyMilliseconds;
 
     @GET
     public Response getAllFights() {
@@ -59,9 +56,27 @@ public class FightResource {
     }
 
     @GET
+    @Path("/randomfighters")
+    @Timeout(500) // <-- Added
+    public Response getRandomFighters() {
+        veryLongProcess(); // <-- Added
+        Fighters fighters = service.findRandomFighters();
+        logger.debug("Get random fighters " + fighters);
+        return Response.ok(fighters).build();
+    }
+    
+    @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/hello")
     public String hello() {
         return "Hello Fight Resource";
     }
+
+    private void veryLongProcess() {
+        try {
+            Thread.sleep(tooManyMilliseconds);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }    
 }
